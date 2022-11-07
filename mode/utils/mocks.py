@@ -4,7 +4,6 @@ import builtins
 import sys
 import types
 import unittest.mock
-from asyncio import coroutine
 from contextlib import contextmanager
 from itertools import count
 from types import ModuleType
@@ -123,8 +122,9 @@ class AsyncMock(unittest.mock.Mock):
         super().__init__(name=name)
         coro = Mock(*args, **kwargs)
         self.attach_mock(coro, "coro")
-        self.side_effect = coroutine(coro)
-
+        async def side_effect(*args, **kwargs):
+            return coro(*args, **kwargs)
+        self.side_effect = side_effect
 
 class AsyncMagicMock(unittest.mock.MagicMock):
     """A magic mock type for ``async def`` functions/methods."""
@@ -133,7 +133,9 @@ class AsyncMagicMock(unittest.mock.MagicMock):
         super().__init__(name=name)
         coro = MagicMock(*args, **kwargs)
         self.attach_mock(coro, "coro")
-        self.side_effect = coroutine(coro)
+        async def side_effect(*args, **kwargs):
+            return coro(*args, **kwargs)
+        self.side_effect = side_effect
 
 
 class AsyncContextMock(unittest.mock.Mock):

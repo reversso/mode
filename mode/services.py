@@ -789,8 +789,8 @@ class Service(ServiceBase, ServiceCallbacks):
 
     async def _wait_stopped(self, timeout: Seconds = None) -> None:
         timeout = want_seconds(timeout) if timeout is not None else None
-        stopped = self._stopped.wait()
-        crashed = self._crashed.wait()
+        stopped = asyncio.create_task(self._stopped.wait())
+        crashed = asyncio.create_task(self._crashed.wait())
         done, pending = await asyncio.wait(
             [stopped, crashed],
             return_when=asyncio.FIRST_COMPLETED,
